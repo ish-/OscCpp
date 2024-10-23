@@ -26,12 +26,32 @@ file(GLOB SAMPLE_SOURCES ${SAMPLE_DIR}/*.cpp)
 add_executable(${PROJECT_NAME} ${SAMPLE_DIR}/main.cpp ${SOURCES} ${SAMPLE_SOURCES})
 include_directories(./ext/)
 
-# list(APPEND CMAKE_MODULE_PATH ${SAMPLE_DIR})
-# include(Sample)
+include_directories("${PROJECT_SOURCE_DIR}")
 
 # !!!!!! use llvm clang
-set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang")
-set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++")
+find_program(CLANG_COMPILER clang)
+find_program(CLANGXX_COMPILER clang++)
 
-# !!!!!! macos: brew install raylib
-include_directories("${PROJECT_SOURCE_DIR}")
+if(CLANG_COMPILER AND CLANGXX_COMPILER)
+    message(STATUS "Clang++ compiler: ${CLANGXX_COMPILER}")
+    set(CMAKE_C_COMPILER ${CLANG_COMPILER})
+    set(CMAKE_CXX_COMPILER ${CLANGXX_COMPILER})
+else()
+    message(FATAL_ERROR "Clang/Clang++ compilers not found")
+endif()
+
+if(APPLE)
+    message(STATUS "OS: Mac")
+
+    # !!!!!! macos: brew install raylib
+    find_package(raylib REQUIRED)
+    if (raylib_FOUND)
+        message(STATUS "Found raylib: ${raylib_LIBRARIES}")
+        target_link_libraries(${PROJECT_NAME} raylib)
+    else()
+        message(FATAL_ERROR "raylib not found")
+    endif()
+
+endif()
+
+
