@@ -28,6 +28,8 @@ include_directories(./ext/)
 
 include_directories("${PROJECT_SOURCE_DIR}")
 
+file( COPY ${SAMPLE_DIR}/shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/resources )
+
 # !!!!!! use llvm clang
 find_program(CLANG_COMPILER clang)
 find_program(CLANGXX_COMPILER clang++)
