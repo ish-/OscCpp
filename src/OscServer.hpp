@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cerrno>
+#include <fcntl.h>
 
 #include <oscpp/server.hpp>
 
@@ -58,6 +59,10 @@ public:
         struct sockaddr_in senderAddr;
         socklen_t senderAddrLen = sizeof(senderAddr);
 
+        // Set the socket to non-blocking mode
+        int flags = fcntl(sockfd, F_GETFL, 0);
+        fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+
         ssize_t receivedBytes;
         bool dataAvailable = true;
 
@@ -67,15 +72,14 @@ public:
 
             if (receivedBytes > 0) {
                 lastPacket.assign(buffer.begin(), buffer.begin() + receivedBytes);
-                // std::cout << "Received packet from " << inet_ntoa(senderAddr.sin_addr) << ":" << ntohs(senderAddr.sin_port) << std::endl;
-                // processPacket(buffer.data(), receivedBytes);
                 handlePacket(OSCPP::Server::Packet(buffer.data(), receivedBytes), handler);
-            } else if (receivedBytes < 0) {
-                if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                    dataAvailable = false;  // No more data available
-                } else {
-                    std::cerr << "Error receiving data" << std::endl;
-                }
+            } else if (receivedBytes == -1 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
+                dataAvailable = false;  // No more data available
+            } else if (receivedBytes == 0) {
+                dataAvailable = false;  // No more data available
+            } else {
+                std::cerr << "Error receiving data" << std::endl;
+                dataAvailable = false;
             }
         }
     }
