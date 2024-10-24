@@ -1,9 +1,10 @@
 #include <cstdio>
-#include <iostream>
 #include <cstring>
+#include <unordered_map>
 #include <vector>
 
 #include "raylib.h"
+#include "raymath.h"
 
 #include <oscpp/print.hpp>
 #include "OscServer.hpp"
@@ -19,13 +20,39 @@ void DrawRenderTexture (RenderTexture2D rt) {
     DrawTextureRec(rt.texture, {0,0,wSize.x,-wSize.y}, {0,0}, WHITE);
 }
 
+float mapRange(float x, float in_min, float in_max, float out_min, float out_max) {
+    return out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min);
+}
+
+float lag(float current, float target, float smoothingFactor, float dt) {
+    return current + (target - current) * smoothingFactor * dt;
+}
+
+class Pointer {
+public:
+    Vector2 pos {0, 0};
+    float speed = 0.;
+
+    void update (float dt, Vector2 targetPos) {
+        Vector2 nextPos {
+            lag(pos.x, targetPos.x, 3., dt),
+            lag(pos.y, targetPos.y, 3., dt) };
+
+        Vector2 diff = Vector2Subtract(nextPos, pos);
+        speed = Vector2Length(diff);
+
+        pos.x = nextPos.x;
+        pos.y = nextPos.y;
+    }
+};
+
 int main()
 {
-    OscServer server(3333);
+    OscServer server(3337);
     InitWindow(wSize.x, wSize.y, "Osc Cpp");
     wSize = {(float)GetMonitorWidth(0), (float)GetMonitorHeight(0)};
     printf("WINDOW SIZE: %f - %f", wSize.x, wSize.y);
-    ToggleBorderlessWindowed();
+    // ToggleBorderlessWindowed();
     SetWindowSize(wSize.x, wSize.y);
     // SetTargetFPS(FPS);
     ClearBackground(BLACK);
@@ -61,11 +88,20 @@ int main()
 
     // DrawTextureRec(Texture2D texture, Rectangle source, Vector2 position, Color tint)
 
-    Vector2& pointer = mouse;
+    Pointer pointer;
+
+    // using FuncType = std::function<void(float)>;
+    // std::unordered_map<std::string, FuncType> chanToFunc {
+    //     {"/leftWrist_x", [&pointer](float val) { pointer.x = val; }},
+    //     {"/leftWrist_y", [&pointer](float val) { pointer.y = val; }},
+    // };
+
+    std::unordered_map<std::string, float> oscChanVals;
 
     double frameTime = 0.;
     while (!WindowShouldClose()) {
         double now = GetTime(); frame++;
+        double delta = GetFrameTime();
         mouse = GetMousePosition();
         mouseZ = IsMouseButtonPressed(0) ? 1 : (IsMouseButtonPressed(1) ? -1 : 0);
 
@@ -73,15 +109,30 @@ int main()
             ClearBackground(BLACK);
 
             // try {
-                server.recv([](OSCPP::Server::Message msg) {
+                server.recv([&oscChanVals](OSCPP::Server::Message msg) {
                     OSCPP::Server::ArgStream args = msg.args();
-                    if (msg == "/chan1")
-                        return;
-                    std::cout << "Received: " << msg << std::endl;
+                    std::string address = msg.address();
+                    // float v = args.float32();
+                    // if (msg == "/leftWrist_x")
+                    //     printf("Received: %s %f\n", address.c_str(), v);
+                    // print()
+                    oscChanVals[address] = args.float32();
+                    // auto it = chanToFunc.find(address);
+                    // if (it != chanToFunc.end()) {
+                    //     FuncType func = it->second;
+                    //     func(args.float32());
+                    // } else if (true)
+                        // std::cout << "Received: " << msg << std::endl;
                 });
             // } catch (const std::exception& e) {
             //     std::cerr << e.what() << std::endl;
             // }
+
+            pointer.update(delta,
+                (Vector2) { oscChanVals["/leftWrist_x"], oscChanVals["/leftWrist_y"] });
+            printf("speed: %f\n", pointer.speed);
+            // printf("Pointer: %f, %f\n", pointer.pos.x, pointer.pos.y);
+            // printf("Pointer.target: %f, %f\n", pointer.targetPos.x, pointer.targetPos.y);
 
             RenderTexture2D thisRT = feedbackCache[frame % feedbackCacheSize];
             RenderTexture2D prevRT = feedbackCache[(frame+1) % feedbackCacheSize];
@@ -89,7 +140,11 @@ int main()
             BeginTextureMode(thisRT);
                 // Color circleColor = ColorFromHSV(now * 30., 1., 1.);
                 Color circleColor = {255,0,0,255};
-                DrawCircle(pointer.x, pointer.y, 40, circleColor);
+                DrawCircle(
+                    mapRange(pointer.pos.x, 0.5, 1.5, 0., wSize.x),
+                    mapRange(pointer.pos.y, 1., 3., wSize.y, 0.),
+                    Clamp(mapRange(pointer.speed * 100., 0, 2, 0, 40), 0, 80),
+                    circleColor);
 
                 BeginShaderMode(edgeShader);
                     DrawRenderTexture(prevRT);

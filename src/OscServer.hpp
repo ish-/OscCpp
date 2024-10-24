@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <vector>
 #include <iostream>
+#include <functional>
 
 #include <cerrno>
 #include <fcntl.h>
@@ -11,7 +12,7 @@
 
 const size_t kMaxPacketSize = 8192;
 
-typedef void (*OscMsgHandlerType)(OSCPP::Server::Message);
+using OscMsgHandlerType = std::function<void(OSCPP::Server::Message)>;
 
 class OscServer
 {

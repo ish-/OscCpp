@@ -56,7 +56,7 @@ inline void checkAlignment(const void* ptr, size_t n)
 {
     if (!isAligned(ptr, n))
     {
-        throw std::runtime_error("Unaligned pointer");
+        // throw std::runtime_error("Unaligned pointer");
     }
 }
 
