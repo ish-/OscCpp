@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <iostream>
 #include <cstring>
 #include <vector>
@@ -7,6 +8,8 @@
 
 #include <oscpp/print.hpp>
 #include "OscServer.hpp"
+
+#include "log.hpp"
 
 float FPS = 60.f;
 float FRAME_TIME = 1. / FPS;
@@ -30,6 +33,7 @@ int main()
     int mouseZ = 0;
     int frame = 0;
 
+    _log("GetWorkingDirectory()", GetWorkingDirectory());
 
     const int feedbackCacheSize = 2;
     std::vector<RenderTexture2D> feedbackCache;

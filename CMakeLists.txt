@@ -28,7 +28,15 @@ include_directories(./ext/)
 
 include_directories("${PROJECT_SOURCE_DIR}")
 
-file( COPY ${SAMPLE_DIR}/shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/resources )
+# !!!!!! copy resources
+set(RESOURCE_FILES
+    ${PROJECT_SOURCE_DIR}/shaders
+)
+add_custom_target(copy_resources ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/resources/shaders
+    DEPENDS ${RESOURCE_FILES}
+    COMMENT "Copying resource files to build directory"
+)
 
 # !!!!!! use llvm clang
 find_program(CLANG_COMPILER clang)
