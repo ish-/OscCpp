@@ -16,7 +16,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIBRARY_DIRECTORY})
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(GLFW_USE_HYBRID_HPG 1)
 # set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
 
@@ -33,10 +32,6 @@ include_directories(./ext/)
 
 include_directories("${PROJECT_SOURCE_DIR}")
 
-# include(FindPkgConfig)
-find_package(PkgConfig)
-include(FetchContent)
-
 # !!!!!! copy resources
 set(RESOURCE_FILES
     ${PROJECT_SOURCE_DIR}/shaders
@@ -47,27 +42,12 @@ add_custom_target(copy_resources ALL
     COMMENT "Copying resource files to build directory"
 )
 
-# !!!!!! use llvm clang
-# find_program(CLANG_COMPILER clang)
-# find_program(CLANGXX_COMPILER clang++)
-
-# if(CLANG_COMPILER AND CLANGXX_COMPILER)
-#     message(STATUS "Clang++ compiler: ${CLANGXX_COMPILER}")
-#     set(CMAKE_C_COMPILER ${CLANG_COMPILER})
-#     set(CMAKE_CXX_COMPILER ${CLANGXX_COMPILER})
-# else()
-#     message(FATAL_ERROR "Clang/Clang++ compilers not found")
-# endif()
+# !!!!!! LIBS
+include(FetchContent)
 
 # !!!!!! RAYLIB
-
-if(APPLE)
-    message(STATUS "OS: Mac")
-    FetchContent_Declare(
-        raylib
-        URL https://github.com/raysan5/raylib/releases/download/5.0/raylib-5.0_macos.tar.gz
-    )
-elseif(MSVC)
+set(GLFW_USE_HYBRID_HPG 1)
+if(MSVC)
     message(STATUS "OS: Win64")
 
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_DIRECTORY})
@@ -82,27 +62,11 @@ elseif(MSVC)
         LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_DIRECTORY}"
         ARCHIVE_OUTPUT_DIRECTORY "${LIBRARY_DIRECTORY}"
     )
-
-    FetchContent_Declare(
-        raylib
-        GIT_REPOSITORY https://github.com/raysan5/raylib.git
-        GIT_TAG 5.0
-    )
 endif()
+FetchContent_Declare(
+    raylib
+    GIT_REPOSITORY https://github.com/raysan5/raylib.git
+    GIT_TAG 5.0
+)
 FetchContent_MakeAvailable(raylib)
-# find_library(RAYLIB NAMES raylib REQUIRED)
-# find_package(raylib REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
-
-
-
-# if(raylib_POPULATED)
-#     message(STATUS "raylib successfully fetched and available")
-#     message(STATUS ${CMAKE_BINARY_DIR}/_deps/raylib-src/lib/raylib.lib)
-#     target_link_libraries(${PROJECT_NAME} PRIVATE raylib ${CMAKE_BINARY_DIR}/_deps/raylib-src/lib/raylib.lib)
-#     target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/_deps/raylib-src/include)
-# else()
-#     message(FATAL_ERROR "raylib not found")
-# endif()
-
-
