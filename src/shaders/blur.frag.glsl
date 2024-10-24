@@ -5,7 +5,7 @@ in vec4 fragColor;
 uniform sampler2D texture0;
 out vec4 finalColor;
 
-const vec2 resolution = vec2(1280, 720);
+ivec2 resolution = textureSize(texture0, 0);
 
 vec4 blur13(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
   vec4 color = vec4(0.0);

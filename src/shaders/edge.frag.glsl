@@ -5,7 +5,7 @@ in vec4 fragColor;
 uniform sampler2D texture0;
 out vec4 finalColor;
 
-const vec2 resolution = vec2(1280, 720);
+ivec2 resolution = textureSize(texture0, 0);
 
 #ifndef SAMPLER_FNC
 #if __VERSION__ >= 300

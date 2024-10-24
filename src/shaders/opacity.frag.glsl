@@ -1,9 +1,11 @@
+#version 330
+
 in vec2 fragTexCoord;
 in vec4 fragColor;
 uniform sampler2D texture0;
 out vec4 finalColor;
 
-const vec2 resolution = vec2(1280, 720);
+ivec2 resolution = textureSize(texture0, 0);
 
 void main()
 {

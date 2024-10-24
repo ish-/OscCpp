@@ -4,30 +4,28 @@
 #include <vector>
 
 #include "raylib.h"
-// #include "raymath.h"
-
 
 #include <oscpp/print.hpp>
 #include "OscServer.hpp"
 
 #include "log.hpp"
-#include "ogl.hpp"
+// #include "ogl.hpp"
 
 float FPS = 60.f;
 float FRAME_TIME = 1. / FPS;
-Vector2 wAspect {16, 9};
-Vector2 wSize {1280, 1280 / wAspect.x * wAspect.y};
+Vector2 wSize {1280, 720};
 
-void DrawRenderTexture (RenderTexture2D rt, float a = 1) {
-    Color tint(255.,255.,a * 255.,a * 255.);
-    DrawTextureRec(rt.texture, {0,0,wSize.x,-wSize.y}, {0,0}, tint);
+void DrawRenderTexture (RenderTexture2D rt) {
+    DrawTextureRec(rt.texture, {0,0,wSize.x,-wSize.y}, {0,0}, WHITE);
 }
 
 int main()
 {
     // OscServer server(3333);
-
     InitWindow(wSize.x, wSize.y, "Osc Cpp");
+    wSize = {(float)GetMonitorWidth(0), (float)GetMonitorHeight(0)};
+    ToggleBorderlessWindowed();
+    SetWindowSize(wSize.x, wSize.y);
     SetTargetFPS(FPS);
     ClearBackground(BLACK);
 
@@ -62,6 +60,8 @@ int main()
 
     // DrawTextureRec(Texture2D texture, Rectangle source, Vector2 position, Color tint)
 
+    Vector2& pointer = mouse;
+
     double frameTime = 0.;
     while (!WindowShouldClose()) {
         double now = GetTime(); frame++;
@@ -86,7 +86,7 @@ int main()
             BeginTextureMode(thisRT);
                 // Color circleColor = ColorFromHSV(now * 30., 1., 1.);
                 Color circleColor = {255,0,0,255};
-                DrawCircle(mouse.x, mouse.y, 40, circleColor);
+                DrawCircle(pointer.x, pointer.y, 40, circleColor);
 
                 BeginShaderMode(edgeShader);
                     DrawRenderTexture(prevRT);
