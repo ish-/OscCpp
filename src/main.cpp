@@ -6,7 +6,7 @@
 #include "raylib.h"
 
 #include <oscpp/print.hpp>
-// #include "OscServer.hpp"
+#include "OscServer.hpp"
 
 #include "log.hpp"
 // #include "ogl.hpp"
@@ -21,7 +21,7 @@ void DrawRenderTexture (RenderTexture2D rt) {
 
 int main()
 {
-    // OscServer server(3333);
+    OscServer server(3333);
     InitWindow(wSize.x, wSize.y, "Osc Cpp");
     wSize = {(float)GetMonitorWidth(0), (float)GetMonitorHeight(0)};
     printf("WINDOW SIZE: %f - %f", wSize.x, wSize.y);
@@ -73,10 +73,12 @@ int main()
             ClearBackground(BLACK);
 
             // try {
-            //     server.recv([](OSCPP::Server::Message msg) {
-            //         OSCPP::Server::ArgStream args = msg.args();
-            //         std::cout << "Received: " << msg << std::endl;
-            //     });
+                server.recv([](OSCPP::Server::Message msg) {
+                    OSCPP::Server::ArgStream args = msg.args();
+                    if (msg == "/chan1")
+                        return;
+                    std::cout << "Received: " << msg << std::endl;
+                });
             // } catch (const std::exception& e) {
             //     std::cerr << e.what() << std::endl;
             // }

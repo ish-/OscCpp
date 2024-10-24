@@ -70,3 +70,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+
+# !!!!!! MinimalCppSocket
+set(BUILD_MinimalCppSocket_SAMPLES OFF CACHE BOOL "" FORCE) # you don't want the samples in this case
+FetchContent_Declare(
+    min_sock
+    GIT_REPOSITORY https://github.com/andreacasalino/Minimal-Socket
+    GIT_TAG        v.3.1
+)
+FetchContent_MakeAvailable(min_sock)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    MinimalSocket
+)

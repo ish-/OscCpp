@@ -3,14 +3,16 @@
 #include <vector>
 #include <iostream>
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+// #include <sys/socket.h>
+// #include <netinet/in.h>
+// #include <arpa/inet.h>
+// #include <unistd.h>
 #include <cerrno>
 #include <fcntl.h>
 
 #include <oscpp/server.hpp>
+
+#include <MinimalSocket/udp/UdpSocket.h>
 
 const size_t kMaxPacketSize = 8192;
 
@@ -21,28 +23,16 @@ class OscServer
 public:
     OscServer(const int& port) {
         printf("Starting OSC Server on port: %i\n", port);
-        sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-        if (sockfd < 0) {
-            throw std::runtime_error("Failed to create socket");
-        }
 
-        // Configure the server address
-        std::memset(&serverAddr, 0, sizeof(serverAddr));
-        serverAddr.sin_family = AF_INET;
-        serverAddr.sin_port = htons(port);
-        // serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-        serverAddr.sin_addr.s_addr = INADDR_ANY;
-        // inet_pton(AF_INET, ip, &serverAddr.sin_addr);
-
-        // Bind the socket
-        if (bind(sockfd, (sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-            close(sockfd);
-            throw std::runtime_error("Failed to bind socket");
-        }
+        socket = MinimalSocket::udp::Udp<false>(
+            MinimalSocket::Port(port),
+            MinimalSocket::AddressFamily::IP_V6
+        );
+        socket.open();
     }
 
     ~OscServer() {
-        close(sockfd);
+        socket.shutDown();
     }
 
     // size_t send(const void* buffer, size_t size) {
@@ -55,28 +45,29 @@ public:
     // }
 
     void recv(OscMsgHandlerType handler) {
-        std::vector<char> buffer(kMaxPacketSize);
-        struct sockaddr_in senderAddr;
-        socklen_t senderAddrLen = sizeof(senderAddr);
-
-        // Set the socket to non-blocking mode
-        int flags = fcntl(sockfd, F_GETFL, 0);
-        fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
-
         ssize_t receivedBytes;
         bool dataAvailable = true;
 
         while (dataAvailable) {
-            receivedBytes = recvfrom(sockfd, buffer.data(), buffer.size(), 0,
-                                            (sockaddr*)&senderAddr, &senderAddrLen);
+            std::optional<MinimalSocket::ReceiveStringResult> received =
+                socket.receive(kMaxPacketSize);
+
+            if (!received) {
+                dataAvailable = false;
+                break;
+            }
+
+            std::string receivedData = received.value().received_message;
+            // char* buffer = receivedData.data();
+            size_t receivedBytes = receivedData.size();
 
             if (receivedBytes > 0) {
-                lastPacket.assign(buffer.begin(), buffer.begin() + receivedBytes);
-                handlePacket(OSCPP::Server::Packet(buffer.data(), receivedBytes), handler);
+                lastPacket.assign(receivedData.begin(), receivedData.begin() + receivedBytes);
+                handlePacket(OSCPP::Server::Packet(receivedData.data(), receivedBytes), handler);
             } else if (receivedBytes == -1 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
-                dataAvailable = false;  // No more data available
+                dataAvailable = false;
             } else if (receivedBytes == 0) {
-                dataAvailable = false;  // No more data available
+                dataAvailable = false;
             } else {
                 std::cerr << "Error receiving data" << std::endl;
                 dataAvailable = false;
@@ -113,12 +104,8 @@ public:
     }
 
 private:
-    int sockfd;
-    sockaddr_in serverAddr;
+    MinimalSocket::udp::Udp<false> socket;
     std::vector<char> lastPacket;
-
-    std::array<char,kMaxPacketSize> m_buffer;
-    size_t m_message;
 };
 
 size_t makeOscPacket(void* buffer, size_t size)
