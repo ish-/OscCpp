@@ -28,6 +28,8 @@ include_directories(./ext/)
 
 include_directories("${PROJECT_SOURCE_DIR}")
 
+include(FetchContent)
+
 # !!!!!! copy resources
 set(RESOURCE_FILES
     ${PROJECT_SOURCE_DIR}/shaders
@@ -50,18 +52,30 @@ else()
     message(FATAL_ERROR "Clang/Clang++ compilers not found")
 endif()
 
+# !!!!!! RAYLIB
+
 if(APPLE)
     message(STATUS "OS: Mac")
+    FetchContent_Declare(
+        raylib
+        URL https://github.com/raysan5/raylib/releases/download/5.0/raylib-5.0_macos.tar.gz
+    )
+elseif(WIN64)
+    message(STATUS "OS: Win64")
+    FetchContent_Declare(
+        raylib
+        URL https://github.com/raysan5/raylib/releases/download/5.0/raylib-5.0_win64_msvc16.zip
+    )
+endif()
+FetchContent_MakeAvailable(raylib)
+find_library(RAYLIB NAMES raylib REQUIRED)
 
-    # !!!!!! macos: brew install raylib
-    find_package(raylib REQUIRED)
-    if (raylib_FOUND)
-        message(STATUS "Found raylib: ${raylib_LIBRARIES}")
-        target_link_libraries(${PROJECT_NAME} raylib)
-    else()
-        message(FATAL_ERROR "raylib not found")
-    endif()
-
+if (RAYLIB)
+    message(STATUS "Found raylib: ${RAYLIB}")
+    target_link_libraries(${PROJECT_NAME} ${RAYLIB})
+    include_directories(${PROJECT_BINARY_DIR}/_deps/raylib-src/include)
+else()
+    message(FATAL_ERROR "raylib not found")
 endif()
 
 
