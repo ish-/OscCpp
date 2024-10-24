@@ -4,12 +4,14 @@
 #include <vector>
 
 #include "raylib.h"
-#include "raymath.h"
+// #include "raymath.h"
+
 
 #include <oscpp/print.hpp>
 #include "OscServer.hpp"
 
 #include "log.hpp"
+#include "ogl.hpp"
 
 float FPS = 60.f;
 float FRAME_TIME = 1. / FPS;
@@ -37,8 +39,11 @@ int main()
 
     const int feedbackCacheSize = 2;
     std::vector<RenderTexture2D> feedbackCache;
-    for (int i = 0; i < feedbackCacheSize; i++)
-        feedbackCache.push_back(LoadRenderTexture(wSize.x, wSize.y));
+    for (int i = 0; i < feedbackCacheSize; i++) {
+        RenderTexture2D target = LoadRenderTexture(wSize.x, wSize.y);
+        // RenderTexture2D target = LoadRT32(wSize.x, wSize.y);
+        feedbackCache.push_back(target);
+    }
 
     Shader blurShader = LoadShader(0, "../resources/shaders/blur.frag.glsl");
 
