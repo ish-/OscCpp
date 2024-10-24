@@ -27,7 +27,7 @@ int main()
     printf("WINDOW SIZE: %f - %f", wSize.x, wSize.y);
     ToggleBorderlessWindowed();
     SetWindowSize(wSize.x, wSize.y);
-    SetTargetFPS(FPS);
+    // SetTargetFPS(FPS);
     ClearBackground(BLACK);
 
     Vector2 mouse {0,0};

@@ -1,6 +1,15 @@
 {
     "configurations": [
         {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "cppStandard": "c++17",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        },
+        {
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**"
@@ -9,7 +18,7 @@
             "macFrameworkPath": [
                 "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks"
             ],
-            "cStandard": "c17",
+            "cppStandard": "c++17",
             "intelliSenseMode": "macos-clang-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
         }

@@ -1,12 +1,7 @@
-#include <array>
 #include <cstdio>
 #include <vector>
 #include <iostream>
 
-// #include <sys/socket.h>
-// #include <netinet/in.h>
-// #include <arpa/inet.h>
-// #include <unistd.h>
 #include <cerrno>
 #include <fcntl.h>
 
@@ -45,12 +40,10 @@ public:
     // }
 
     void recv(OscMsgHandlerType handler) {
-        ssize_t receivedBytes;
         bool dataAvailable = true;
 
         while (dataAvailable) {
-            std::optional<MinimalSocket::ReceiveStringResult> received =
-                socket.receive(kMaxPacketSize);
+            std::optional<MinimalSocket::ReceiveStringResult> received = socket.receive(kMaxPacketSize);
 
             if (!received) {
                 dataAvailable = false;
