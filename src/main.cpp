@@ -19,7 +19,7 @@ Vector2 wAspect {16, 9};
 Vector2 wSize {1280, 1280 / wAspect.x * wAspect.y};
 
 void DrawRenderTexture (RenderTexture2D rt, float a = 1) {
-    Color tint(255,255,255,a * 255.);
+    Color tint(255.,255.,a * 255.,a * 255.);
     DrawTextureRec(rt.texture, {0,0,wSize.x,-wSize.y}, {0,0}, tint);
 }
 
@@ -42,16 +42,27 @@ int main()
     for (int i = 0; i < feedbackCacheSize; i++) {
         RenderTexture2D target = LoadRenderTexture(wSize.x, wSize.y);
         // RenderTexture2D target = LoadRT32(wSize.x, wSize.y);
+        // BeginDrawing();
+        //     BeginTextureMode(target);
+        //         ClearBackground(BLACK);
+        //     EndTextureMode();
+        // EndDrawing();
         feedbackCache.push_back(target);
     }
 
     Shader blurShader = LoadShader(0, "../resources/shaders/blur.frag.glsl");
-
     if (!IsShaderReady(blurShader))
-        throw std::runtime_error("Shader not ready");
+        throw std::runtime_error("blur Shader not ready");
+    Shader edgeShader = LoadShader(0, "../resources/shaders/edge.frag.glsl");
+    if (!IsShaderReady(edgeShader))
+        throw std::runtime_error("edge Shader not ready");
+    Shader opacityShader = LoadShader(0, "../resources/shaders/opacity.frag.glsl");
+    if (!IsShaderReady(opacityShader))
+        throw std::runtime_error("opacity Shader not ready");
 
     // DrawTextureRec(Texture2D texture, Rectangle source, Vector2 position, Color tint)
 
+    double frameTime = 0.;
     while (!WindowShouldClose()) {
         double now = GetTime(); frame++;
         mouse = GetMousePosition();
@@ -73,16 +84,24 @@ int main()
             RenderTexture2D prevRT = feedbackCache[(frame+1) % feedbackCacheSize];
 
             BeginTextureMode(thisRT);
-                DrawCircle(mouse.x, mouse.y, 20, WHITE);
+                // Color circleColor = ColorFromHSV(now * 30., 1., 1.);
+                Color circleColor = {255,0,0,255};
+                DrawCircle(mouse.x, mouse.y, 40, circleColor);
 
+                BeginShaderMode(edgeShader);
+                    DrawRenderTexture(prevRT);
+                EndShaderMode();
                 BeginShaderMode(blurShader);
-                    DrawRenderTexture(prevRT, 0);
+                    DrawRenderTexture(thisRT);
+                EndShaderMode();
+                BeginShaderMode(opacityShader);
+                    DrawRenderTexture(thisRT);
                 EndShaderMode();
             EndTextureMode();
 
             DrawRenderTexture(thisRT);
-            DrawText(TextFormat("%ims / %ifps", (int)((GetTime() - now) * 1000.), GetFPS()), 20, 20, 30, WHITE);
             // EndShaderMode();
+            DrawText(TextFormat("%i fps", GetFPS()), 20, 20, 30, WHITE);
             // DrawText(TextFormat("%i : %i", (int)mouse.x, (int)mouse.y), 20, 50, 30, BLACK);
         EndDrawing();
     }
