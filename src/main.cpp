@@ -6,7 +6,7 @@
 #include "raylib.h"
 
 #include <oscpp/print.hpp>
-#include "OscServer.hpp"
+// #include "OscServer.hpp"
 
 #include "log.hpp"
 // #include "ogl.hpp"
@@ -24,6 +24,7 @@ int main()
     // OscServer server(3333);
     InitWindow(wSize.x, wSize.y, "Osc Cpp");
     wSize = {(float)GetMonitorWidth(0), (float)GetMonitorHeight(0)};
+    printf("WINDOW SIZE: %f - %f", wSize.x, wSize.y);
     ToggleBorderlessWindowed();
     SetWindowSize(wSize.x, wSize.y);
     SetTargetFPS(FPS);
