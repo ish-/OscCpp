@@ -2,7 +2,7 @@
   "port": 3338,
 
   "pointerX_chan": "/leftWrist_x",
-  "pointerX_range": [0.5, 1.5],
+  "pointerX_range": [0, 1.2],
   "pointerY_chan": "/leftWrist_y",
   "pointerY_range": [1, 3],
 
