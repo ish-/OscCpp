@@ -1,0 +1,10 @@
+{
+  "port": 3338,
+
+  "pointerX_chan": "/leftWrist_x",
+  "pointerX_range": [0.5, 1.5],
+  "pointerY_chan": "/leftWrist_y",
+  "pointerY_range": [1, 3],
+
+  "version": "0.1"
+}

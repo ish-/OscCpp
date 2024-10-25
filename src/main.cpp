@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -9,14 +10,21 @@
 #include <oscpp/print.hpp>
 #include "OscServer.hpp"
 
-#include "math.cpp"
-#include "log.cpp"
 #include "StateChangeDetector.hpp"
-// #include "ogl.hpp"
+#include "config.hpp"
 
+Config CONF;
 float FPS = 60.f;
 float FRAME_TIME = 1. / FPS;
 Vector2 wSize {1280, 720};
+
+float mapRange(float x, float in_min, float in_max, float out_min, float out_max) {
+    return out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min);
+}
+
+float lag(float current, float target, float smoothingFactor, float dt) {
+    return current + (target - current) * smoothingFactor * dt;
+}
 
 void DrawRenderTexture (RenderTexture2D rt) {
     DrawTextureRec(rt.texture, {0,0,wSize.x,-wSize.y}, {0,0}, WHITE);
@@ -44,9 +52,12 @@ public:
     }
 };
 
+
 int main()
 {
-    OscServer server(3337);
+    CONF = LoadConfig();
+
+    OscServer server(CONF.port);
     InitWindow(wSize.x, wSize.y, "Osc Cpp");
     ToggleBorderlessWindowed();
     HideCursor();
@@ -55,6 +66,8 @@ int main()
     printf("WINDOW SIZE: %f - %f", wSize.x, wSize.y);
     SetWindowSize(wSize.x, wSize.y);
 
+    printf("JSON: %s\n", CONF.pointerX_chan.c_str());
+
     // SetTargetFPS(FPS);
     ClearBackground(BLACK);
 
@@ -62,7 +75,7 @@ int main()
     int mouseZ = 0;
     int frame = 0;
 
-    _log("GetWorkingDirectory()", GetWorkingDirectory());
+    // _log("GetWorkingDirectory()", GetWorkingDirectory());
 
     const int feedbackCacheSize = 2;
     std::vector<RenderTexture2D> feedbackCache;
@@ -89,6 +102,7 @@ int main()
 
     Pointer pointer ({ wSize.x/2, wSize.y/2 });
     StateChangeDetector fullscreenBtn;
+    StateChangeDetector reloadConfigBtn;
     StateChangeDetector mouseModeBtn;
     bool mouseMode;
     StateChangeDetector showDebugBtn;
@@ -112,6 +126,8 @@ int main()
             mouseMode = !mouseMode;
         if (showDebugBtn.hasChangedOn(IsKeyPressed(KEY_D)))
             showDebug = !showDebug;
+        if (reloadConfigBtn.hasChangedOn(IsKeyPressed(KEY_R)))
+            CONF = LoadConfig();
 
         BeginDrawing();
             ClearBackground(BLACK);
@@ -129,8 +145,8 @@ int main()
             // }
             Vector2 pointerTarget =  (mouseMode || !oscGotMessage) ? mouse
                 : (Vector2) {
-                    mapRange(oscChanVals["/leftWrist_x"], 0.5, 1.5, 0., wSize.x),
-                    mapRange(oscChanVals["/leftWrist_y"], 1., 3., wSize.y, 0.),
+                    mapRange(oscChanVals[CONF.pointerX_chan], CONF.pointerX_range[0], CONF.pointerX_range[1], 0., wSize.x),
+                    mapRange(oscChanVals[CONF.pointerY_chan], CONF.pointerY_range[0], CONF.pointerY_range[1], wSize.y, 0.),
                 };
             pointer.update(delta,pointerTarget);
 

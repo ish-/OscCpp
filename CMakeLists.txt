@@ -50,6 +50,7 @@ set(RESOURCE_FILES
 )
 add_custom_target(copy_resources ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/resources/shaders
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/config.json ${CMAKE_BINARY_DIR}/resources/config.json
     DEPENDS ${RESOURCE_FILES}
     COMMENT "Copying resource files to build directory"
 )
@@ -79,3 +80,12 @@ FetchContent_MakeAvailable(min_sock)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     MinimalSocket
 )
+
+# !!!!!! JSON
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json
+    GIT_TAG        v3.11.3
+)
+FetchContent_MakeAvailable(nlohmann_json)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
