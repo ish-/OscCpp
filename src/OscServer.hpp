@@ -22,7 +22,7 @@ public:
 
         socket = MinimalSocket::udp::Udp<false>(
             MinimalSocket::Port(port),
-            MinimalSocket::AddressFamily::IP_V6
+            MinimalSocket::AddressFamily::IP_V4
         );
         socket.open();
     }

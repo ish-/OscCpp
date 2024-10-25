@@ -14,7 +14,7 @@
 #include "config.hpp"
 
 Config CONF;
-float FPS = 60.f;
+float FPS = 120.f;
 float FRAME_TIME = 1. / FPS;
 Vector2 wSize {1280, 720};
 
@@ -52,7 +52,8 @@ public:
     }
 };
 
-
+bool mouseMode;
+bool showDebug;
 int main()
 {
     CONF = LoadConfig();
@@ -68,7 +69,7 @@ int main()
 
     printf("JSON: %s\n", CONF.pointerX_chan.c_str());
 
-    // SetTargetFPS(FPS);
+    SetTargetFPS(FPS);
     ClearBackground(BLACK);
 
     Vector2 mouse {wSize.x/2,wSize.y/2};
@@ -104,9 +105,8 @@ int main()
     StateChangeDetector fullscreenBtn;
     StateChangeDetector reloadConfigBtn;
     StateChangeDetector mouseModeBtn;
-    bool mouseMode;
+    
     StateChangeDetector showDebugBtn;
-    bool showDebug;
     bool oscGotMessage = false;
 
     std::unordered_map<std::string, float> oscChanVals;
@@ -139,15 +139,16 @@ int main()
                     std::string address = msg.address();
 
                     oscChanVals[address] = args.float32();
+                    std::cout << "OSC: " << msg << std::endl;
                 });
             // } catch (const std::exception& e) {
             //     std::cerr << e.what() << std::endl;
             // }
-            Vector2 pointerTarget =  (mouseMode || !oscGotMessage) ? mouse
-                : (Vector2) {
-                    mapRange(oscChanVals[CONF.pointerX_chan], CONF.pointerX_range[0], CONF.pointerX_range[1], 0., wSize.x),
-                    mapRange(oscChanVals[CONF.pointerY_chan], CONF.pointerY_range[0], CONF.pointerY_range[1], wSize.y, 0.),
-                };
+            Vector2 oscCoords = {
+                mapRange(oscChanVals[CONF.pointerX_chan], CONF.pointerX_range[0], CONF.pointerX_range[1], 0., wSize.x),
+                mapRange(oscChanVals[CONF.pointerY_chan], CONF.pointerY_range[0], CONF.pointerY_range[1], wSize.y, 0.),
+            };
+            Vector2 pointerTarget =  (mouseMode || !oscGotMessage) ? mouse : oscCoords;
             pointer.update(delta,pointerTarget);
 
             RenderTexture2D thisRT = feedbackCache[frame % feedbackCacheSize];
@@ -174,8 +175,8 @@ int main()
 
             DrawRenderTexture(thisRT);
 
-            DrawText(TextFormat("%i fps", GetFPS()), 20, 20, 30, WHITE);
             if (showDebug) {
+                DrawText(TextFormat("%i fps", GetFPS()), 20, 20, 30, WHITE);
                 DrawText(TextFormat("pointer: %.0f : %.0f", pointer._targetPos.x, pointer._targetPos.y), 20, 50, 30, WHITE);
                 DrawText(TextFormat("speed: %.3f", pointer.speed), 20, 80, 30, WHITE);
             }
