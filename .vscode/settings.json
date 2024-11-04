@@ -88,7 +88,9 @@
     "queue": "cpp",
     "regex": "cpp",
     "source_location": "cpp",
-    "stack": "cpp"
+    "stack": "cpp",
+    "xstring": "cpp",
+    "fstream": "cpp"
   },
   "C_Cpp.default.cppStandard": "c++20"
 }

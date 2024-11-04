@@ -6,6 +6,7 @@ using json = nlohmann::json;
 
 struct Config {
     int port;
+    int monitor;
     std::string pointerX_chan;
     float pointerX_range[2];
     std::string pointerY_chan;
@@ -16,6 +17,7 @@ struct Config {
 
 inline void from_json(const nlohmann::json& j, Config& c) {
     j.at("port").get_to(c.port);
+    j.at("monitor").get_to(c.monitor);
     j.at("pointerX_chan").get_to(c.pointerX_chan);
     j.at("pointerY_chan").get_to(c.pointerY_chan);
     j.at("pointerX_range").at(0).get_to(c.pointerX_range[0]);

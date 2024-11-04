@@ -1,5 +1,6 @@
 {
   "port": 3338,
+  "monitor": 0,
 
   "pointerX_chan": "/leftWrist_x",
   "pointerX_range": [0, 1.2],

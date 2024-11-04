@@ -59,11 +59,12 @@ int main()
     CONF = LoadConfig();
 
     OscServer server(CONF.port);
+    SetWindowMonitor(CONF.monitor);
     InitWindow(wSize.x, wSize.y, "Osc Cpp");
     ToggleBorderlessWindowed();
     HideCursor();
     DisableCursor();
-    wSize = {(float)GetMonitorWidth(0), (float)GetMonitorHeight(0)};
+    wSize = {(float)GetMonitorWidth(CONF.monitor), (float)GetMonitorHeight(CONF.monitor)};
     printf("WINDOW SIZE: %f - %f", wSize.x, wSize.y);
     SetWindowSize(wSize.x, wSize.y);
 
